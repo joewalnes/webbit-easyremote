@@ -35,10 +35,6 @@ public class Magic<C extends Client> implements WebSocketHandler {
     }
 
     public static <T extends Client> WebSocketHandler magic(Class<T> clientType, Server<T> server) {
-        return new Magic<T>(clientType, server);
-    }
-
-    public static <T extends Client> WebSocketHandler magic(Server<T> server) {
         for (Type aClass : server.getClass().getGenericInterfaces()) {
             if (aClass instanceof ParameterizedType) {
                 ParameterizedType parameterizedType = (ParameterizedType) aClass;
@@ -46,7 +42,7 @@ public class Magic<C extends Client> implements WebSocketHandler {
             }
             System.out.println("aClass = " + aClass.getClass());
         }
-        return new Magic<T>(null, server);
+        return new Magic<T>(clientType, server);
     }
 
     public static class Foo {
