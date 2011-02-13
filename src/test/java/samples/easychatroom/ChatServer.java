@@ -1,7 +1,7 @@
 package samples.easychatroom;
 
+import org.webbitserver.easyremote.Remote;
 import org.webbitserver.easyremote.Server;
-import org.webbitserver.easyremote.Web;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -28,7 +28,7 @@ public class ChatServer implements Server<ChatClient> {
         clients.remove(client);
     }
 
-    @Web
+    @Remote
     public void login(ChatClient client, String username) {
         client.connection().data(USERNAME_KEY, username); // associate username with connection
 
@@ -37,7 +37,7 @@ public class ChatServer implements Server<ChatClient> {
         }
     }
 
-    @Web
+    @Remote
     public void say(ChatClient client, String message) {
         String username = (String) client.connection().data(USERNAME_KEY);
         if (username != null) {

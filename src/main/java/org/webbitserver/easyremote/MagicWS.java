@@ -9,18 +9,24 @@ import java.lang.reflect.*;
 import java.util.*;
 
 @SuppressWarnings({"unchecked"})
-public class Magic<C extends Client> implements WebSocketHandler {
+public class MagicWS<C extends Client> implements WebSocketHandler {
 
     private final Class<C> clientType;
     private final Server<C> server;
     private final Map<String, Method> serverMethods = new HashMap<String, Method>();
     private final Gson gson = new Gson();
 
-    public Magic(Class<C> clientType, Server<C> server) {
+    public MagicWS(Class<C> clientType, Server<C> server) {
         this.clientType = clientType;
+        if (!clientType.isInterface()) {
+            throw new IllegalArgumentException(clientType.getName() + " is not an interface");
+        }
+        if (clientType.getAnnotation(Remote.class) == null) {
+            throw new IllegalArgumentException("Interface " + clientType.getName() + " not marked with " + Remote.class.getName() + " annotation");
+        }
         this.server = server;
         for (Method method : server.getClass().getMethods()) {
-            if (method.getAnnotation(Web.class) != null) {
+            if (method.getAnnotation(Remote.class) != null) {
                 serverMethods.put(method.getName(), method);
             }
         }
@@ -35,14 +41,7 @@ public class Magic<C extends Client> implements WebSocketHandler {
     }
 
     public static <T extends Client> WebSocketHandler magic(Class<T> clientType, Server<T> server) {
-        for (Type aClass : server.getClass().getGenericInterfaces()) {
-            if (aClass instanceof ParameterizedType) {
-                ParameterizedType parameterizedType = (ParameterizedType) aClass;
-                System.out.println("parameterizedType = " + parameterizedType.getRawType());
-            }
-            System.out.println("aClass = " + aClass.getClass());
-        }
-        return new Magic<T>(clientType, server);
+        return new MagicWS<T>(clientType, server);
     }
 
     public static class Foo {

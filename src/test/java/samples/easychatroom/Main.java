@@ -6,7 +6,7 @@ import org.webbitserver.handler.logging.LoggingHandler;
 import org.webbitserver.handler.logging.SimpleLogSink;
 
 import static org.webbitserver.WebServers.createWebServer;
-import static org.webbitserver.easyremote.Magic.magic;
+import static org.webbitserver.easyremote.MagicWS.magic;
 
 public class Main {
 
