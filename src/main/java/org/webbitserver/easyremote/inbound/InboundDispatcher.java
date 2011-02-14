@@ -1,6 +1,5 @@
 package org.webbitserver.easyremote.inbound;
 
-import com.google.gson.Gson;
 import org.webbitserver.HttpRequest;
 import org.webbitserver.WebSocketConnection;
 import org.webbitserver.easyremote.Remote;
@@ -10,14 +9,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class InboundDispatcher {
+public abstract class InboundDispatcher {
 
-    private final Gson gson;
     private final Map<String, Action> inboundActions = new HashMap<String, Action>();
 
-    public InboundDispatcher(Gson gson, final Object server, final Class<?> clientType) {
-        this.gson = gson;
-
+    public InboundDispatcher(final Object server, final Class<?> clientType) {
         for (final Method method : server.getClass().getMethods()) {
             if (method.getAnnotation(Remote.class) != null) {
                 inboundActions.put(method.getName(), new ReflectiveAction(method, clientType, server));
@@ -25,22 +21,24 @@ public class InboundDispatcher {
         }
     }
 
-    private static class ActionArgsTuple {
-        public String action;
-        public Object[] args;
+    protected abstract InboundMessage unmarshalInboundRequest(String msg);
+
+    public interface InboundMessage {
+        String method();
+        Object[] args();
     }
 
     public void dispatch(WebSocketConnection connection, String msg, Object client) throws Exception {
-        ActionArgsTuple map = gson.fromJson(msg, ActionArgsTuple.class);
-        Action action = inboundActions.get(map.action);
-        action.call(connection, client, map.args);
+        InboundMessage map = unmarshalInboundRequest(msg);
+        Action action = inboundActions.get(map.method());
+        action.call(connection, client, map.args());
     }
 
     public Set<String> availableMethods() {
         return inboundActions.keySet();
     }
 
-    private static interface Action {
+    public static interface Action {
         void call(WebSocketConnection connection, Object client, Object[] args) throws Exception;
     }
 

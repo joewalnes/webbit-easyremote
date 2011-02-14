@@ -3,6 +3,7 @@ package org.webbitserver.easyremote;
 import com.google.gson.Gson;
 import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
+import org.webbitserver.easyremote.inbound.GsonInboundDispatcher;
 import org.webbitserver.easyremote.inbound.InboundDispatcher;
 import org.webbitserver.easyremote.outbound.ClientMaker;
 import org.webbitserver.easyremote.outbound.GsonClientMaker;
@@ -24,7 +25,7 @@ public class MagicWS<CLIENT> implements WebSocketHandler {
     public MagicWS(Class<CLIENT> clientType, Server<CLIENT> server) {
         this.clientType = clientType;
         gson = new Gson();
-        this.in = new InboundDispatcher(gson, server, clientType);
+        this.in = new GsonInboundDispatcher(server, clientType, gson);
         this.clientMaker = new GsonClientMaker(gson);
         this.server = server;
     }
