@@ -1,6 +1,7 @@
 package org.webbitserver.easyremote.outbound;
 
 import org.webbitserver.WebSocketConnection;
+import org.webbitserver.easyremote.Remote;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -16,9 +17,19 @@ public abstract class DynamicProxyClientMaker implements ClientMaker {
     @Override
     @SuppressWarnings({"unchecked"})
     public <T> T implement(Class<T> type, WebSocketConnection connection) {
+        validateType(type);
         return (T) Proxy.newProxyInstance(classLoader(),
                 new Class<?>[]{type},
                 createInvocationHandler(type, connection));
+    }
+
+    protected void validateType(Class<?> type) {
+        if (!type.isInterface()) {
+            throw new IllegalArgumentException(type.getName() + " is not an interface");
+        }
+        if (type.getAnnotation(Remote.class) == null) {
+            throw new IllegalArgumentException("Interface " + type.getName() + " not marked with " + Remote.class.getName() + " annotation");
+        }
     }
 
     protected ClassLoader classLoader() {

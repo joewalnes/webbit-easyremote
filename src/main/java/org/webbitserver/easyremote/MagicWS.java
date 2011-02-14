@@ -1,91 +1,59 @@
 package org.webbitserver.easyremote;
 
 import com.google.gson.Gson;
-import org.webbitserver.HttpRequest;
 import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
+import org.webbitserver.easyremote.inbound.InboundDispatcher;
 import org.webbitserver.easyremote.outbound.ClientMaker;
 import org.webbitserver.easyremote.outbound.GsonClientMaker;
 
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings({"unchecked"})
-public class MagicWS<C> implements WebSocketHandler {
+public class MagicWS<CLIENT> implements WebSocketHandler {
 
-    private final Class<C> clientType;
-    private final Server<C> server;
-    private final Map<String, Method> serverMethods = new HashMap<String, Method>();
-    private final Gson gson = new Gson();
-    private final ClientMaker clientMaker = new GsonClientMaker(gson);
+    public static final String CLIENT_KEY = MagicWS.class.getPackage().getName() + ".client";
 
-    public MagicWS(Class<C> clientType, Server<C> server) {
+    private final Class<CLIENT> clientType;
+    private final Server<CLIENT> server;
+    private final ClientMaker clientMaker;
+    private final InboundDispatcher in;
+    private final Gson gson;
+
+    public MagicWS(Class<CLIENT> clientType, Server<CLIENT> server) {
         this.clientType = clientType;
-        if (!clientType.isInterface()) {
-            throw new IllegalArgumentException(clientType.getName() + " is not an interface");
-        }
-        if (clientType.getAnnotation(Remote.class) == null) {
-            throw new IllegalArgumentException("Interface " + clientType.getName() + " not marked with " + Remote.class.getName() + " annotation");
-        }
+        gson = new Gson();
+        this.in = new InboundDispatcher(gson, server, clientType);
+        this.clientMaker = new GsonClientMaker(gson);
         this.server = server;
-        for (Method method : server.getClass().getMethods()) {
-            if (method.getAnnotation(Remote.class) != null) {
-                serverMethods.put(method.getName(), method);
-            }
-        }
-    }
-
-    @Override
-    public void onOpen(WebSocketConnection connection) throws Exception {
-        exportMethods(connection);
-        C client = clientMaker.implement(clientType, connection);
-        connection.data("client", client);
-        server.onOpen(connection, client);
     }
 
     public static <T> WebSocketHandler magic(Class<T> clientType, Server<T> server) {
         return new MagicWS<T>(clientType, server);
     }
 
-    public static class Foo {
-        public String action;
-        public Object[] args;
+    @Override
+    public void onOpen(WebSocketConnection connection) throws Exception {
+        exportMethods(connection);
+        CLIENT client = clientMaker.implement(clientType, connection);
+        connection.data(CLIENT_KEY, client);
+        server.onOpen(connection, client);
     }
 
     private void exportMethods(WebSocketConnection connection) {
         Map<String, Object> r = new HashMap<String, Object>();
-        r.put("exports", serverMethods.keySet());
+        r.put("exports", in.availableMethods());
         connection.send(gson.toJson(r));
     }
 
     @Override
     public void onMessage(WebSocketConnection connection, String msg) throws Exception {
-        C client = (C) connection.data("client");
-        Foo map = gson.fromJson(msg, Foo.class);
-        Method method = serverMethods.get(map.action);
-
-        Class<?>[] paramTypes = method.getParameterTypes();
-        Object[] args = new Object[paramTypes.length];
-        int argIndex = 0;
-        for (int i = 0; i < paramTypes.length; i++) {
-            Class<?> paramType = paramTypes[i];
-            if (paramType.isAssignableFrom(clientType)) {
-                args[i] = client;
-            } else if (paramType.isAssignableFrom(WebSocketConnection.class)) {
-                args[i] = connection;
-            } else if (paramType.isAssignableFrom(HttpRequest.class)) {
-                args[i] = connection.httpRequest();
-            } else {
-                args[i] = map.args[argIndex++];
-            }
-        }
-        method.invoke(server, args);
+        in.dispatch(connection, msg, connection.data(CLIENT_KEY));
     }
 
     @Override
     public void onClose(WebSocketConnection connection) throws Exception {
-        C client = (C) connection.data("client");
-        server.onClose(connection,  client);
+        server.onClose(connection, (CLIENT) connection.data(CLIENT_KEY));
     }
 }
