@@ -12,8 +12,9 @@ CLASSPATH=$(shell echo $(wildcard lib/*.jar) | sed -e 's/ /:/g')
 all: jar test
 jar: build/$(LIBRARY).jar build/$(LIBRARY)-src.jar
 test: build/.tests-pass
+
 # Run sample chatroom
-chatroom: test
+chatroom: build/$(LIBRARY)-tests.jar
 	java -cp $(CLASSPATH):build/$(LIBRARY).jar:build/$(LIBRARY)-tests.jar samples.easychatroom.Main
 
 # Function to find files in directory with suffix. $(call find,dir,ext)
