@@ -34,8 +34,6 @@ public abstract class DynamicProxyClientMaker implements ClientMaker {
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 if (method.getDeclaringClass() == Object.class) {
                     return method.invoke(connection, args);
-                } else if (method.getDeclaringClass() == Client.class && method.getName().equals("connection")) {
-                    return connection;
                 } else {
                     String msg = createMessage(method, args);
                     connection.send(msg);

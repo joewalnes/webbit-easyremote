@@ -1,5 +1,6 @@
 package samples.easychatroom;
 
+import org.webbitserver.WebSocketConnection;
 import org.webbitserver.easyremote.Remote;
 import org.webbitserver.easyremote.Server;
 
@@ -13,13 +14,13 @@ public class ChatServer implements Server<ChatClient> {
     private Set<ChatClient> clients = new HashSet<ChatClient>();
 
     @Override
-    public void onOpen(ChatClient client) throws Exception {
+    public void onOpen(WebSocketConnection connection, ChatClient client) throws Exception {
         clients.add(client);
     }
 
     @Override
-    public void onClose(ChatClient client) throws Exception {
-        String username = (String) client.connection().data(USERNAME_KEY);
+    public void onClose(WebSocketConnection connection, ChatClient client) throws Exception {
+        String username = (String) connection.data(USERNAME_KEY);
         if (username != null) {
             for (ChatClient other : clients) {
                 other.leave(username);
@@ -29,8 +30,8 @@ public class ChatServer implements Server<ChatClient> {
     }
 
     @Remote
-    public void login(ChatClient client, String username) {
-        client.connection().data(USERNAME_KEY, username); // associate username with connection
+    public void login(WebSocketConnection connection, String username) {
+        connection.data(USERNAME_KEY, username); // associate username with connection
 
         for (ChatClient other : clients) {
             other.join(username);
@@ -38,8 +39,8 @@ public class ChatServer implements Server<ChatClient> {
     }
 
     @Remote
-    public void say(ChatClient client, String message) {
-        String username = (String) client.connection().data(USERNAME_KEY);
+    public void say(WebSocketConnection connection, String message) {
+        String username = (String) connection.data(USERNAME_KEY);
         if (username != null) {
             for (ChatClient other : clients) {
                 other.say(username, message);

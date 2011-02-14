@@ -41,7 +41,7 @@ public class MagicWS<C extends Client> implements WebSocketHandler {
         exportMethods(connection);
         C client = clientMaker.implement(clientType, connection);
         connection.data("client", client);
-        server.onOpen(client);
+        server.onOpen(connection, client);
     }
 
     public static <T extends Client> WebSocketHandler magic(Class<T> clientType, Server<T> server) {
@@ -73,9 +73,9 @@ public class MagicWS<C extends Client> implements WebSocketHandler {
             if (paramType.isAssignableFrom(clientType)) {
                 args[i] = client;
             } else if (paramType.isAssignableFrom(WebSocketConnection.class)) {
-                args[i] = client.connection();
+                args[i] = connection;
             } else if (paramType.isAssignableFrom(HttpRequest.class)) {
-                args[i] = client.connection().httpRequest();
+                args[i] = connection.httpRequest();
             } else {
                 args[i] = map.args[argIndex++];
             }
@@ -86,6 +86,6 @@ public class MagicWS<C extends Client> implements WebSocketHandler {
     @Override
     public void onClose(WebSocketConnection connection) throws Exception {
         C client = (C) connection.data("client");
-        server.onClose(client);
+        server.onClose(connection,  client);
     }
 }

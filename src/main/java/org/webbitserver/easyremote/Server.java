@@ -1,10 +1,11 @@
 package org.webbitserver.easyremote;
 
-import org.webbitserver.easyremote.Client;
+import org.webbitserver.WebSocketConnection;
 
 public interface Server<C extends Client> {
 
-    void onOpen(C client) throws Exception;
-    void onClose(C client) throws Exception;
+    void onOpen(WebSocketConnection connection, C client) throws Exception;
+
+    void onClose(WebSocketConnection connection, C client) throws Exception;
 
 }
