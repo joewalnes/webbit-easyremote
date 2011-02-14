@@ -1,5 +1,6 @@
 package samples.easychatroom;
 
+import org.webbitserver.DataHolder;
 import org.webbitserver.WebSocketConnection;
 import org.webbitserver.easyremote.Remote;
 import org.webbitserver.easyremote.Server;
@@ -30,8 +31,8 @@ public class ChatServer implements Server<ChatClient> {
     }
 
     @Remote
-    public void login(WebSocketConnection connection, String username) {
-        connection.data(USERNAME_KEY, username); // associate username with connection
+    public void login(DataHolder connectionData, String username) {
+        connectionData.data(USERNAME_KEY, username); // associate username with connection
 
         for (ChatClient other : clients) {
             other.join(username);
@@ -39,8 +40,8 @@ public class ChatServer implements Server<ChatClient> {
     }
 
     @Remote
-    public void say(WebSocketConnection connection, String message) {
-        String username = (String) connection.data(USERNAME_KEY);
+    public void say(DataHolder connectionData, String message) {
+        String username = (String) connectionData.data(USERNAME_KEY);
         if (username != null) {
             for (ChatClient other : clients) {
                 other.say(username, message);
