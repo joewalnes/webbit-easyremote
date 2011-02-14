@@ -4,9 +4,12 @@ import com.google.gson.Gson;
 import org.webbitserver.HttpRequest;
 import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
+import org.webbitserver.easyremote.outbound.ClientMaker;
+import org.webbitserver.easyremote.outbound.GsonClientMaker;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 @SuppressWarnings({"unchecked"})
 public class MagicWS<C extends Client> implements WebSocketHandler {
@@ -15,6 +18,7 @@ public class MagicWS<C extends Client> implements WebSocketHandler {
     private final Server<C> server;
     private final Map<String, Method> serverMethods = new HashMap<String, Method>();
     private final Gson gson = new Gson();
+    private final ClientMaker clientMaker = new GsonClientMaker(gson);
 
     public MagicWS(Class<C> clientType, Server<C> server) {
         this.clientType = clientType;
@@ -35,7 +39,7 @@ public class MagicWS<C extends Client> implements WebSocketHandler {
     @Override
     public void onOpen(WebSocketConnection connection) throws Exception {
         exportMethods(connection);
-        C client = implementClientProxy(connection);
+        C client = clientMaker.implement(clientType, connection);
         connection.data("client", client);
         server.onOpen(client);
     }
@@ -55,27 +59,6 @@ public class MagicWS<C extends Client> implements WebSocketHandler {
         connection.send(gson.toJson(r));
     }
 
-    @SuppressWarnings({"unchecked"})
-    private C implementClientProxy(final WebSocketConnection connection) {
-        return (C) Proxy.newProxyInstance(Client.class.getClassLoader(), new Class<?>[] {clientType}, new InvocationHandler() {
-            @Override
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                if (method.getDeclaringClass() == Object.class) {
-                    return method.invoke(connection, args);
-                }
-                if (method.getDeclaringClass() == Client.class && method.getName().equals("connection")) {
-                    return connection;
-                }
-                Map<String, Object> outgoing = new HashMap<String, Object>();
-                outgoing.put("action", method.getName());
-                outgoing.put("args", args);
-                connection.send(gson.toJson(outgoing));
-                return null;
-            }
-
-        });
-    }
-
     @Override
     public void onMessage(WebSocketConnection connection, String msg) throws Exception {
         C client = (C) connection.data("client");
@@ -88,7 +71,7 @@ public class MagicWS<C extends Client> implements WebSocketHandler {
         for (int i = 0; i < paramTypes.length; i++) {
             Class<?> paramType = paramTypes[i];
             if (paramType.isAssignableFrom(clientType)) {
-                 args[i] = client;
+                args[i] = client;
             } else if (paramType.isAssignableFrom(WebSocketConnection.class)) {
                 args[i] = client.connection();
             } else if (paramType.isAssignableFrom(HttpRequest.class)) {
