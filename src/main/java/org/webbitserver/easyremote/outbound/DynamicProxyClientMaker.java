@@ -1,7 +1,6 @@
 package org.webbitserver.easyremote.outbound;
 
 import org.webbitserver.WebSocketConnection;
-import org.webbitserver.easyremote.Client;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings({"unchecked"})
-public class MagicWS<C extends Client> implements WebSocketHandler {
+public class MagicWS<C> implements WebSocketHandler {
 
     private final Class<C> clientType;
     private final Server<C> server;
@@ -44,7 +44,7 @@ public class MagicWS<C extends Client> implements WebSocketHandler {
         server.onOpen(connection, client);
     }
 
-    public static <T extends Client> WebSocketHandler magic(Class<T> clientType, Server<T> server) {
+    public static <T> WebSocketHandler magic(Class<T> clientType, Server<T> server) {
         return new MagicWS<T>(clientType, server);
     }
 
