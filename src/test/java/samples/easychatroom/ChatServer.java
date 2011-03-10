@@ -1,7 +1,7 @@
 package samples.easychatroom;
 
 import org.webbitserver.DataHolder;
-import org.webbitserver.WebSocketConnection;
+import org.webbitserver.CometConnection;
 import org.webbitserver.easyremote.Remote;
 import org.webbitserver.easyremote.Server;
 
@@ -15,12 +15,12 @@ public class ChatServer implements Server<ChatClient> {
     private Set<ChatClient> clients = new HashSet<ChatClient>();
 
     @Override
-    public void onOpen(WebSocketConnection connection, ChatClient client) throws Exception {
+    public void onOpen(CometConnection connection, ChatClient client) throws Exception {
         clients.add(client);
     }
 
     @Override
-    public void onClose(WebSocketConnection connection, ChatClient client) throws Exception {
+    public void onClose(CometConnection connection, ChatClient client) throws Exception {
         String username = (String) connection.data(USERNAME_KEY);
         if (username != null) {
             for (ChatClient other : clients) {

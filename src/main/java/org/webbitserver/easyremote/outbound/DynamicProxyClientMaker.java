@@ -1,6 +1,6 @@
 package org.webbitserver.easyremote.outbound;
 
-import org.webbitserver.WebSocketConnection;
+import org.webbitserver.CometConnection;
 import org.webbitserver.easyremote.Remote;
 
 import java.lang.reflect.InvocationHandler;
@@ -16,7 +16,7 @@ public abstract class DynamicProxyClientMaker implements ClientMaker {
 
     @Override
     @SuppressWarnings({"unchecked"})
-    public <T> T implement(Class<T> type, WebSocketConnection connection) {
+    public <T> T implement(Class<T> type, CometConnection connection) {
         validateType(type);
         return (T) Proxy.newProxyInstance(classLoader(),
                 new Class<?>[]{type},
@@ -38,7 +38,7 @@ public abstract class DynamicProxyClientMaker implements ClientMaker {
 
     @SuppressWarnings({"UnusedDeclaration"}) // Type not used here, but made available to subclasses.
     protected InvocationHandler createInvocationHandler(final Class<?> type,
-                                                        final WebSocketConnection connection) {
+                                                        final CometConnection connection) {
         return new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
