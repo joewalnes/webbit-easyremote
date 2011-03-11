@@ -22,15 +22,19 @@ function WebbitSocket(path, target) {
                     };
                     ws.send(JSON.stringify(outgoing));
                 };
-            })
+            });
             target.onopen && target.onopen();
             self.onopen && self.onopen();
         } else {
             var action = target[msg.action];
             if (typeof action === 'function') {
-                action.apply(target, msg.args);
+                if(action.length == msg.args.length) {
+                    action.apply(target, msg.args);
+                } else {
+                    self.__badNumberOfArguments('Function ' + msg.action + ' called with: ' + msg.args.length + ' arguments, but it takes ' + action.length + ' arguments.');
+                }
             } else {
-                // TODO: ?
+                self.__noSuchFunction('No such function: ' + msg.action);
             }
         }
     };

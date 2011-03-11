@@ -14,11 +14,26 @@ public abstract class InboundDispatcher {
     private final Map<String, Action> inboundActions = new HashMap<String, Action>();
 
     public InboundDispatcher(final Object server, final Class<?> clientType) {
-        for (final Method method : server.getClass().getMethods()) {
+        buildActionMap(server, clientType);
+        buildActionMap(this, clientType);
+    }
+
+    private void buildActionMap(Object target, Class<?> clientType) {
+        for (final Method method : target.getClass().getMethods()) {
             if (method.getAnnotation(Remote.class) != null) {
-                inboundActions.put(method.getName(), new ReflectiveAction(method, clientType, server));
+                inboundActions.put(method.getName(), new ReflectiveAction(method, clientType, target));
             }
         }
+    }
+
+    @Remote
+    public void __noSuchFunction(String message) {
+        throw new RuntimeException(message);
+    }
+
+    @Remote
+    public void __badNumberOfArguments(String message) {
+        throw new RuntimeException(message);
     }
 
     protected abstract InboundMessage unmarshalInboundRequest(String msg);
@@ -45,12 +60,12 @@ public abstract class InboundDispatcher {
     private static class ReflectiveAction implements Action {
         private final Method method;
         private final Class<?> clientType;
-        private final Object server;
+        private final Object target;
 
-        public ReflectiveAction(Method method, Class<?> clientType, Object server) {
+        public ReflectiveAction(Method method, Class<?> clientType, Object target) {
             this.method = method;
             this.clientType = clientType;
-            this.server = server;
+            this.target = target;
         }
 
         @Override
@@ -70,7 +85,7 @@ public abstract class InboundDispatcher {
                     callArgs[i] = args[argIndex++];
                 }
             }
-            method.invoke(server, callArgs);
+            method.invoke(target, callArgs);
         }
     }
 }

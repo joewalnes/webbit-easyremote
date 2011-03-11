@@ -45,7 +45,7 @@ function connect() {
         },
         leave: function(username) {
             logText("* User '" + username +"' left.");
-        },
+        }
     });
 
     // wire up text input event
