@@ -1,0 +1,21 @@
+# fig --publish org.webbitserver-webbit-easyremote/0.1.0
+resource target/webbit-easyremote-0.1.0.jar
+resource target/webbit-easyremote-0.1.0-sources.jar
+
+config default
+  append CLASSPATH=@/target/webbit-easyremote-0.1.0.jar
+  append SOURCEPATH=@/target/webbit-easyremote-0.1.0-sources.jar
+  include webbit
+  include gson
+end
+
+config dev
+  include :default
+  include webbit/0.1.2
+  include gson/1.6
+end
+
+config test
+  include :dev
+  include junit/4.8.2
+end
