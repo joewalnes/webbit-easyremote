@@ -26,6 +26,7 @@ extracttests = $(shell jar tf $(1) | grep 'Test.class$$' | sed -e 's|/|.|g;s|.cl
 # Compile Jar
 build/$(LIBRARY).jar: $(call find,src/main/java,java)
 	@mkdir -p build/main/classes
+	cp -R src/main/resources/* build/main/classes
 	javac -g -cp $(CLASSPATH) -d build/main/classes $(call find,src/main/java,java)
 	jar cf $@ -C build/main/classes .
 
