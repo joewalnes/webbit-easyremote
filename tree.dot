@@ -1,4 +1,0 @@
-digraph "org.webbitserver:webbit:jar:0.1.0-SNAPSHOT (scope not updated to compile)" { 
-	"org.webbitserver:webbit:jar:0.1.0-SNAPSHOT (scope not updated to compile)" -> "com.google.code.gson:gson:jar:1.6:compile" ; 
-	"org.webbitserver:webbit:jar:0.1.0-SNAPSHOT (scope not updated to compile)" -> "junit:junit:jar:4.8.2:test" ; 
- } 
