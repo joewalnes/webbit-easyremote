@@ -5,17 +5,21 @@ resource target/webbit-easyremote-0.1.0-sources.jar
 config default
   append CLASSPATH=@/target/webbit-easyremote-0.1.0.jar
   append SOURCEPATH=@/target/webbit-easyremote-0.1.0-sources.jar
-  include webbit
-  include gson
+  include org.webbitserver-webbit
+  include com.google.code.gson-gson
 end
 
-config dev
+config with-deps
+  include :build
+end
+
+config build
   include :default
-  include webbit/0.1.2
-  include gson/1.6
+  include org.webbitserver-webbit/0.1.2
+  include com.google.code.gson-gson/1.6
 end
 
 config test
-  include :dev
+  include :build
   include junit/4.8.2
 end

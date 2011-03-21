@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Packages maven artifacts as fig packages - recursively
+#
+# It builds packages from your local maven repo. If you want sources to be included in the fig package,
+# make sure you install them like:
+#
+#   mvn clean source:jar install
+#
+
+
+# Verify that the pom.xml declares the right deps plugin version.
+depsok=`egrep "<artifactId>maven-dependency-plugin</artifactId>" -C2 pom.xml | egrep "<version>2.2</version>" | sed 's/[ \t]*//'`
+if [ -n $depsok ] || [ $depsok != "<version>2.2</version>" ]; then
+  echo "Add the following to your pom.xml - it's needed to get proper dependency information"
+  echo
+  echo '<plugin>'
+  echo '  <groupId>org.apache.maven.plugins</groupId>'
+  echo '  <artifactId>maven-dependency-plugin</artifactId>'
+  echo '  <version>2.2</version>'
+  echo '</plugin>'
+  echo 
+#  exit 1
+fi
+
+mvn dependency:tree -DoutputType=tgf -DoutputFile=graph.tgf
+

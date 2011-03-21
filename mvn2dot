@@ -1,0 +1,4 @@
+mvn dependency:tree -DoutputType=dot -DoutputFile=graph.dot
+dot -Tpng < graph.dot > graph.png
+gnome-open graph.png
+

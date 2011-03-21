@@ -1,0 +1,10 @@
+1276343195 org.webbitserver:webbit-easyremote:jar:0.1.0
+1621922957 org.webbitserver:webbit:jar:0.1.2:compile
+-1563579277 org.jboss.netty:netty:jar:3.2.4.Final:compile
+131902858 com.google.code.gson:gson:jar:1.6:compile
+735736731 junit:junit:jar:4.8.2:test
+#
+1621922957 -1563579277 compile
+1276343195 1621922957 compile
+1276343195 131902858 compile
+1276343195 735736731 test
