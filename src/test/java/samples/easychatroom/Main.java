@@ -15,7 +15,7 @@ public class Main {
                 .add(new LoggingHandler(new SimpleLogSink(ChatServer.USERNAME_KEY)))
                 .add("/chatsocket", magic(ChatClient.class, new ChatServer()))
                 .add(new StaticFileHandler("./src/test/java/samples/easychatroom/content"))
-                .add(new StaticFileHandler("./src/main/java/org/webbitserver/easyremote"))
+                .add(new StaticFileHandler("./src/main/resources/org/webbitserver/easyremote"))
                 .start();
 
         System.out.println("Chat room running on: " + webServer.getUri());

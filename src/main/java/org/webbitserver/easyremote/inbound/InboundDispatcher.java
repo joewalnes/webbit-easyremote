@@ -1,7 +1,7 @@
 package org.webbitserver.easyremote.inbound;
 
 import org.webbitserver.HttpRequest;
-import org.webbitserver.CometConnection;
+import org.webbitserver.WebSocketConnection;
 import org.webbitserver.easyremote.Remote;
 
 import java.lang.reflect.Method;
@@ -40,10 +40,11 @@ public abstract class InboundDispatcher {
 
     public interface InboundMessage {
         String method();
+
         Object[] args();
     }
 
-    public void dispatch(CometConnection connection, String msg, Object client) throws Exception {
+    public void dispatch(WebSocketConnection connection, String msg, Object client) throws Exception {
         InboundMessage map = unmarshalInboundRequest(msg);
         Action action = inboundActions.get(map.method());
         action.call(connection, client, map.args());
@@ -54,7 +55,7 @@ public abstract class InboundDispatcher {
     }
 
     public static interface Action {
-        void call(CometConnection connection, Object client, Object[] args) throws Exception;
+        void call(WebSocketConnection connection, Object client, Object[] args) throws Exception;
     }
 
     private static class ReflectiveAction implements Action {
@@ -69,7 +70,7 @@ public abstract class InboundDispatcher {
         }
 
         @Override
-        public void call(CometConnection connection, Object client, Object[] args) throws Exception {
+        public void call(WebSocketConnection connection, Object client, Object[] args) throws Exception {
             Class<?>[] paramTypes = method.getParameterTypes();
             Object[] callArgs = new Object[paramTypes.length];
             int argIndex = 0;
@@ -77,7 +78,7 @@ public abstract class InboundDispatcher {
                 Class<?> paramType = paramTypes[i];
                 if (paramType.isAssignableFrom(clientType)) {
                     callArgs[i] = client;
-                } else if (paramType.isAssignableFrom(CometConnection.class)) {
+                } else if (paramType.isAssignableFrom(WebSocketConnection.class)) {
                     callArgs[i] = connection;
                 } else if (paramType.isAssignableFrom(HttpRequest.class)) {
                     callArgs[i] = connection.httpRequest();

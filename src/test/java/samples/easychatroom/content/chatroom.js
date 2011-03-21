@@ -32,19 +32,20 @@ function connect() {
     logText('* Connecting...');
     chatServer = new WebbitSocket('/chatsocket', {
         onopen: function() {
-            logText('* Connected!'); login();
+            logText('* Connected!');
+            login();
         },
         onclose: function() {
             logText('* Disconnected');
         },
         say: function(username, message) {
-            logText("[" + username +"] " + message);
+            logText("[" + username + "] " + message);
         },
         join: function(username) {
-            logText("* User '" + username +"' joined.");
+            logText("* User '" + username + "' joined.");
         },
         leave: function(username) {
-            logText("* User '" + username +"' left.");
+            logText("* User '" + username + "' left.");
         }
     });
 
