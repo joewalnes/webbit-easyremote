@@ -1,10 +1,11 @@
-# fig --publish org.webbitserver-webbit-easyremote/0.1.0
-resource target/webbit-easyremote-0.1.0.jar
-resource target/webbit-easyremote-0.1.0-sources.jar
+# mvn clean source:jar package
+# fig --publish org.webbitserver-webbit-easyremote/0.1.1
+resource target/webbit-easyremote-0.1.1.jar
+resource target/webbit-easyremote-0.1.1-sources.jar
 
 config default
-  append CLASSPATH=@/target/webbit-easyremote-0.1.0.jar
-  append SOURCEPATH=@/target/webbit-easyremote-0.1.0-sources.jar
+  append CLASSPATH=@/target/webbit-easyremote-0.1.1.jar
+  append SOURCEPATH=@/target/webbit-easyremote-0.1.1-sources.jar
   include org.webbitserver-webbit
   include com.google.code.gson-gson
 end
@@ -15,7 +16,7 @@ end
 
 config build
   include :default
-  include org.webbitserver-webbit/0.1.2
+  include org.webbitserver-webbit/0.1.11
   include com.google.code.gson-gson/1.6
 end
 
