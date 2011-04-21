@@ -6,6 +6,10 @@ import org.webbitserver.easyremote.Remote;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Generates an implementation of an outbound interface using a dynamic proxy.
@@ -19,7 +23,7 @@ public abstract class DynamicProxyClientMaker implements ClientMaker {
     public <T> T implement(Class<T> type, WebSocketConnection connection) {
         validateType(type);
         return (T) Proxy.newProxyInstance(classLoader(),
-                new Class<?>[]{type},
+                new Class<?>[]{Exporter.class, type},
                 createInvocationHandler(type, connection));
     }
 
@@ -44,6 +48,12 @@ public abstract class DynamicProxyClientMaker implements ClientMaker {
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 if (method.getDeclaringClass() == Object.class) {
                     return method.invoke(connection, args);
+                } else if(method.getDeclaringClass() == Exporter.class) {
+                    Set<String> methodSet = (Set<String>) args[0];
+                    String[] methods = methodSet.toArray(new String[methodSet.size()]);
+                    String msg = createMessage(method, methods);
+                    connection.send(msg);
+                    return null;
                 } else {
                     String msg = createMessage(method, args);
                     connection.send(msg);

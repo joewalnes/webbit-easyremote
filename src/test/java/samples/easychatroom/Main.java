@@ -1,6 +1,7 @@
 package samples.easychatroom;
 
 import org.webbitserver.WebServer;
+import org.webbitserver.handler.EmbeddedResourceHandler;
 import org.webbitserver.handler.StaticFileHandler;
 import org.webbitserver.handler.logging.LoggingHandler;
 import org.webbitserver.handler.logging.SimpleLogSink;
@@ -15,7 +16,7 @@ public class Main {
                 .add(new LoggingHandler(new SimpleLogSink(ChatServer.USERNAME_KEY)))
                 .add("/chatsocket", magic(ChatClient.class, new ChatServer()))
                 .add(new StaticFileHandler("./src/test/java/samples/easychatroom/content"))
-                .add(new StaticFileHandler("./src/main/resources/org/webbitserver/easyremote"))
+                .add(new EmbeddedResourceHandler("org/webbitserver/easyremote"))
                 .start();
 
         System.out.println("Chat room running on: " + webServer.getUri());

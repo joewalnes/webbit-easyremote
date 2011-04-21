@@ -6,10 +6,9 @@ import org.webbitserver.WebSocketHandler;
 import org.webbitserver.easyremote.inbound.GsonInboundDispatcher;
 import org.webbitserver.easyremote.inbound.InboundDispatcher;
 import org.webbitserver.easyremote.outbound.ClientMaker;
+import org.webbitserver.easyremote.outbound.CsvClientMaker;
+import org.webbitserver.easyremote.outbound.Exporter;
 import org.webbitserver.easyremote.outbound.GsonClientMaker;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @SuppressWarnings({"unchecked"})
 public class MagicWS<CLIENT> implements WebSocketHandler {
@@ -18,15 +17,12 @@ public class MagicWS<CLIENT> implements WebSocketHandler {
 
     private final Class<CLIENT> clientType;
     private final Server<CLIENT> server;
-    private final ClientMaker clientMaker;
     private final InboundDispatcher in;
-    private final Gson gson;
 
     public MagicWS(Class<CLIENT> clientType, Server<CLIENT> server) {
         this.clientType = clientType;
-        gson = new Gson();
+        Gson gson = new Gson();
         this.in = new GsonInboundDispatcher(server, clientType, gson);
-        this.clientMaker = new GsonClientMaker(gson);
         this.server = server;
     }
 
@@ -36,16 +32,12 @@ public class MagicWS<CLIENT> implements WebSocketHandler {
 
     @Override
     public void onOpen(WebSocketConnection connection) throws Exception {
-        exportMethods(connection);
+        String format = connection.httpRequest().queryParam("format");
+        ClientMaker clientMaker = "csv".equals(format) ? new CsvClientMaker() : new GsonClientMaker();
         CLIENT client = clientMaker.implement(clientType, connection);
+        ((Exporter)client).__exportMethods(in.availableMethods());
         connection.data(CLIENT_KEY, client);
         server.onOpen(connection, client);
-    }
-
-    private void exportMethods(WebSocketConnection connection) {
-        Map<String, Object> r = new HashMap<String, Object>();
-        r.put("exports", in.availableMethods());
-        connection.send(gson.toJson(r));
     }
 
     @Override

@@ -47,7 +47,7 @@ function connect() {
         leave: function(username) {
             logText("* User '" + username + "' left.");
         }
-    });
+    }, window.location.hash.substring(1)); // Use #csv to use CSV transport instead of JSON
 
     // wire up text input event
     var entry = document.getElementById('entry');
