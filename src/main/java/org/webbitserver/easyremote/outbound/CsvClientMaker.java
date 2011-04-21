@@ -11,28 +11,32 @@ import org.webbitserver.easyremote.NotCsvSerializableException;
  * If you need to send more complex data, use {@link GsonClientMaker} instead.
  */
 public class CsvClientMaker extends DynamicProxyClientMaker {
+    private static final String NULL = "";
+
     @Override
     protected String createMessage(String methodName, Object[] args) {
         StringBuilder msg = new StringBuilder(methodName);
         for (Object arg : args) {
-            checkSerializable(arg);
-            msg.append(',').append(arg);
+            msg.append(',').append(format(arg));
         }
         return msg.toString();
     }
 
-    private void checkSerializable(Object arg) {
+    private String format(Object arg) {
         if(null == arg) {
-            return;
+            return NULL;
         }
         if(Number.class.isAssignableFrom(arg.getClass())) {
-            return;
+            return String.valueOf(arg);
         }
         if(String.class.equals(arg.getClass()) && ((String) arg).indexOf(',') == -1) {
-            return;
+            return (String) arg;
         }
         if(Boolean.class.isAssignableFrom(arg.getClass())) {
-            return;
+            return String.valueOf(arg);
+        }
+        if(Enum.class.isAssignableFrom(arg.getClass())) {
+            return String.valueOf(arg);
         }
         throw new NotCsvSerializableException(arg);
     }

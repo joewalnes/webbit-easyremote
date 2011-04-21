@@ -3,27 +3,38 @@ package org.webbitserver.easyremote.outbound;
 import org.junit.Test;
 import org.webbitserver.easyremote.NotCsvSerializableException;
 
+import static org.junit.Assert.assertEquals;
+
 public class CsvClientMakerTest {
     private TestableCsvClientMaker cm = new TestableCsvClientMaker();
 
     @Test
-    public void allows_numbers() throws Exception {
-        cm.createMessage("add", new Object[]{1, 2.0});
+    public void formats_numbers() throws Exception {
+        assertEquals("add,1,2.0", cm.createMessage("add", new Object[]{1, 2.0}));
     }
 
     @Test
-    public void allows_booleans() throws Exception {
-        cm.createMessage("add", new Object[]{true, false});
+    public void formats_booleans() throws Exception {
+        assertEquals("add,true,false", cm.createMessage("add", new Object[]{true, false}));
     }
 
     @Test
-    public void allows_null() throws Exception {
-        cm.createMessage("add", new Object[]{null});
+    public void formats_null_as_empty_string_which_is_falseley_in_javascript() throws Exception {
+        assertEquals("add,", cm.createMessage("add", new Object[]{null}));
     }
 
     @Test
-    public void allows_strings() throws Exception {
-        cm.createMessage("say", new Object[]{"de er små"});
+    public void formats_strings() throws Exception {
+        assertEquals("say,de er små", cm.createMessage("say", new Object[]{"de er små"}));
+    }
+
+    private static enum Stuff {
+        KEY, PHONE
+    }
+
+    @Test
+    public void formats_enums() throws Exception {
+        assertEquals("say,KEY,PHONE", cm.createMessage("say", new Object[]{Stuff.KEY, Stuff.PHONE}));
     }
 
     @Test(expected = NotCsvSerializableException.class)
