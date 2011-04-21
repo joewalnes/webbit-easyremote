@@ -6,8 +6,10 @@ import org.webbitserver.easyremote.NotCsvSerializableException;
  * This implementation just comma-separates the function name
  * and the arguments. This is faster than serialising/deserialising JSON.
  *
- * Using this class you can only send primitive types and strings. Strings cannot contain a comma.
- * No nested types or other objects either. You're trading flexibility for speed with this class.
+ * Using this class you can only send null, numbers, booleans, enums and strings without comma.
+ * null becomes an empty string, which is falseley in javascript.
+ *
+ * You're trading flexibility for speed with this class.
  * If you need to send more complex data, use {@link GsonClientMaker} instead.
  */
 public class CsvClientMaker extends DynamicProxyClientMaker {
