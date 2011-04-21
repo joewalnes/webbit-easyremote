@@ -104,7 +104,7 @@ To use the CSV format, just construct your WebbitSocket like this:
 
     new WebbitSocket("/websocket", myClient, "csv");
 
-That's it! See the [Chat Room](tree/master/src/test/java/samples/easychatroom) example for a full example. You can run it with:
+That's it! See the [Chat Room](./tree/master/src/test/java/samples/easychatroom) example for a full example. You can run it with:
 
     make chatroom
 
