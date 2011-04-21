@@ -102,7 +102,7 @@ slow, even for short messages. Parsing this is faster:
 
 To use the CSV format, just construct your WebbitSocket like this:
 
-   new WebbitSocket("/websocket", myClient, "csv");
+    new WebbitSocket("/websocket", myClient, "csv");
 
 That's it!
 
