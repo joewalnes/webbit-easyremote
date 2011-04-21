@@ -29,17 +29,31 @@ Now, implement the object you would like to invoke methods on from the browser J
       }
 
       @Remote
-      public void login(DataHolder connection, String username) {
+      public void login(String username) {
       }
 
       @Remote
-      public void say(DataHolder connection, String message) {
+      public void say(String message) {
       }
     }
 
 The `@Remote` annotation on the methods exposes methods so they can be invoked by the browser.
+To make it convenient for the server to know *what* WebSocket client invoked a particular method,
+each `@Remote` method can declare additional arguments of one or more of the following types:
 
-Now hook it all up in Webbit:
+* `org.webbitserver.WebSocketConnection`
+* `org.webbitserver.HttpRequest`
+* The type of the client
+
+For example:
+
+    @Remote
+    public void say(WebSocketConnection connection, ChatClient client, String message) {
+    }
+
+The only constraint is that the arguments supplied by the client are declared in the same order in the Java method signature.
+
+Finally hook it all up in Webbit:
 
     WebServer webServer = createWebServer(9877)
       .add("/chatsocket", magic(ChatClient.class, new ChatServer()))   // Mount your client proxy and server instance

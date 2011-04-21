@@ -49,10 +49,10 @@ function WebbitSocket(path, target, format) {
                     if(action.length == incomingArgs.length) {
                         action.apply(target, incomingArgs);
                     } else {
-                        self.__badNumberOfArguments('Function ' + incomingAction + ' called with: ' + incomingArgs.length + ' arguments, but it takes ' + action.length + ' arguments.');
+                        self.__badNumberOfArguments('Javascript Function ' + incomingAction, action.length, incomingArgs);
                     }
                 } else {
-                    self.__noSuchFunction('No such function: ' + incomingAction);
+                    self.__noSuchFunction('Javascript Function '  + incomingAction);
                 }
             }
         });
