@@ -6,9 +6,6 @@ import org.webbitserver.easyremote.Remote;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -16,7 +13,7 @@ import java.util.Set;
  */
 public abstract class DynamicProxyClientMaker implements ClientMaker {
 
-    protected abstract String createMessage(Method method, Object[] args);
+    protected abstract String createMessage(String methodName, Object[] args);
 
     @Override
     @SuppressWarnings({"unchecked"})
@@ -40,7 +37,7 @@ public abstract class DynamicProxyClientMaker implements ClientMaker {
         return getClass().getClassLoader();
     }
 
-    @SuppressWarnings({"UnusedDeclaration"}) // Type not used here, but made available to subclasses.
+    @SuppressWarnings({"UnusedDeclaration"})
     protected InvocationHandler createInvocationHandler(final Class<?> type,
                                                         final WebSocketConnection connection) {
         return new InvocationHandler() {
@@ -51,11 +48,11 @@ public abstract class DynamicProxyClientMaker implements ClientMaker {
                 } else if(method.getDeclaringClass() == Exporter.class) {
                     Set<String> methodSet = (Set<String>) args[0];
                     String[] methods = methodSet.toArray(new String[methodSet.size()]);
-                    String msg = createMessage(method, methods);
+                    String msg = createMessage(method.getName(), methods);
                     connection.send(msg);
                     return null;
                 } else {
-                    String msg = createMessage(method, args);
+                    String msg = createMessage(method.getName(), args);
                     connection.send(msg);
                     return null;
                 }

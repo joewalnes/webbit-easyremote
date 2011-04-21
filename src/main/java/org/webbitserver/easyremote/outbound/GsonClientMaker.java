@@ -2,7 +2,6 @@ package org.webbitserver.easyremote.outbound;
 
 import com.google.gson.Gson;
 
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,9 +18,9 @@ public class GsonClientMaker extends DynamicProxyClientMaker {
     }
 
     @Override
-    public String createMessage(Method method, Object[] args) {
+    public String createMessage(String methodName, Object[] args) {
         Map<String, Object> outgoing = new HashMap<String, Object>();
-        outgoing.put("action", method.getName());
+        outgoing.put("action", methodName);
         outgoing.put("args", args);
         return gson.toJson(outgoing);
     }
