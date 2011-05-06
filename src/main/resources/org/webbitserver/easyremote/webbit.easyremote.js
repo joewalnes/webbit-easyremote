@@ -18,7 +18,34 @@ function WebbitSocket(path, target, format) {
     var incomingInvocation = format == 'csv' ? csvParser : jsonParser;
 
     var self = this;
-    var ws = new WebSocket('ws://' + document.location.host + path + '?format=' + format);
+    function exportMethods(incomingArgs) {
+        incomingArgs.forEach(function(name) {
+            self[name] = function() {
+                var outgoing = {
+                    action: name,
+                    args: Array.prototype.slice.call(arguments)
+                };
+                ws.send(JSON.stringify(outgoing));
+            };
+        });
+        target.onopen && target.onopen();
+        self.onopen && self.onopen();
+    }
+
+    function invokeOnTarget(incomingAction, incomingArgs) {
+        var action = target[incomingAction];
+        if (typeof action === 'function') {
+            if (action.length == incomingArgs.length) {
+                action.apply(target, incomingArgs);
+            } else {
+                self.__badNumberOfArguments('Javascript Function ' + incomingAction, action.length, incomingArgs);
+            }
+        } else {
+            self.__noSuchFunction('Javascript Function ' + incomingAction);
+        }
+    }
+
+    var ws = new WebSocket('ws://' + document.location.host + path + '?serverClientFormat=' + format);
     ws.onclose = function() {
         target.onclose && target.onclose();
         self.onclose && self.onclose();
@@ -27,33 +54,15 @@ function WebbitSocket(path, target, format) {
         target.onerror && target.onerror();
         self.onerror && self.onerror();
     };
+
     ws.onmessage = function(e) {
         target.onmessage && target.onmessage(e);
         self.onmessage && self.onmessage(e);
         incomingInvocation(e.data, function(incomingAction, incomingArgs) {
             if (incomingAction == '__exportMethods') {
-                incomingArgs.forEach(function(name) {
-                    self[name] = function() {
-                        var outgoing = {
-                            action: name,
-                            args: Array.prototype.slice.call(arguments)
-                        };
-                        ws.send(JSON.stringify(outgoing));
-                    };
-                });
-                target.onopen && target.onopen();
-                self.onopen && self.onopen();
+                exportMethods(incomingArgs);
             } else {
-                var action = target[incomingAction];
-                if (typeof action === 'function') {
-                    if(action.length == incomingArgs.length) {
-                        action.apply(target, incomingArgs);
-                    } else {
-                        self.__badNumberOfArguments('Javascript Function ' + incomingAction, action.length, incomingArgs);
-                    }
-                } else {
-                    self.__noSuchFunction('Javascript Function '  + incomingAction);
-                }
+                invokeOnTarget(incomingAction, incomingArgs);
             }
         });
     };

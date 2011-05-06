@@ -21,7 +21,7 @@ public abstract class DynamicProxyClientMaker implements ClientMaker {
         validateType(type);
         return (T) Proxy.newProxyInstance(classLoader(),
                 new Class<?>[]{Exporter.class, type},
-                createInvocationHandler(type, connection));
+                createInvocationHandler(connection));
     }
 
     protected void validateType(Class<?> type) {
@@ -37,9 +37,7 @@ public abstract class DynamicProxyClientMaker implements ClientMaker {
         return getClass().getClassLoader();
     }
 
-    @SuppressWarnings({"UnusedDeclaration"})
-    protected InvocationHandler createInvocationHandler(final Class<?> type,
-                                                        final WebSocketConnection connection) {
+    protected InvocationHandler createInvocationHandler(final WebSocketConnection connection) {
         return new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {

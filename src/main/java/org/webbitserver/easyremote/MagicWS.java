@@ -32,8 +32,8 @@ public class MagicWS<CLIENT> implements WebSocketHandler {
 
     @Override
     public void onOpen(WebSocketConnection connection) throws Exception {
-        String format = connection.httpRequest().queryParam("format");
-        ClientMaker clientMaker = "csv".equals(format) ? new CsvClientMaker() : new GsonClientMaker();
+        String serverClientFormat = connection.httpRequest().queryParam("serverClientFormat");
+        ClientMaker clientMaker = "csv".equals(serverClientFormat) ? new CsvClientMaker() : new GsonClientMaker();
         CLIENT client = clientMaker.implement(clientType, connection);
         ((Exporter)client).__exportMethods(in.availableMethods());
         connection.data(CLIENT_KEY, client);
