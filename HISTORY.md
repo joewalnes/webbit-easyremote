@@ -1,4 +1,4 @@
-0.1.0 (In Git)
+0.1.2 (2011-05-09)
 ==================
 
 * Better error reporting if http://stacktracejs.org/ is installed in the browser. (Aslak Hellesøy)
