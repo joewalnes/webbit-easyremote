@@ -3,9 +3,31 @@
  *
  * @param path
  * @param target - A Javascript object that will receive function calls.
- * @param format - How server->client invocations are formatted. Defaults to JSON. Use 'csv' to use the faster CSV format.
+ * @param options - An object for configuring the instance:
+ *
+ *   serverClientFormat: [csv|json] - How server->client invocations are formatted.
+ *                                    Defaults to json. Use 'csv' to use the faster CSV format.
+ *
+ *   errorHandler: A function that will be called if an exception happens in the client when the
+ *                 server invokes a function.
  */
-function WebbitSocket(path, target, format) {
+function WebbitSocket(path, target, options) {
+    var self = this;
+
+    this.reportClientExceptionToServer = function(e) {
+        if(typeof(window.printStackTrace) == 'function') {
+            self.__reportClientException(printStackTrace({e:e}).join("\n"));
+        } else {
+            self.__reportClientException(e);
+        }
+    };
+
+    var opts = {
+        serverClientFormat: 'json',
+        exceptionHandler: this.reportClientExceptionToServer
+    };
+    for (var opt in options) { opts[opt] = options[opt]; }
+
     function jsonParser(data, callback) {
         var msg = JSON.parse(data);
         callback(msg.action, msg.args);
@@ -15,9 +37,8 @@ function WebbitSocket(path, target, format) {
         callback(msg[0], msg.slice(1));
     }
 
-    var incomingInvocation = format == 'csv' ? csvParser : jsonParser;
+    var incomingInvocation = opt.serverClientFormat == 'csv' ? csvParser : jsonParser;
 
-    var self = this;
     function exportMethods(incomingArgs) {
         incomingArgs.forEach(function(name) {
             self[name] = function() {
@@ -36,7 +57,11 @@ function WebbitSocket(path, target, format) {
         var action = target[incomingAction];
         if (typeof action === 'function') {
             if (action.length == incomingArgs.length) {
-                action.apply(target, incomingArgs);
+                try {
+                    action.apply(target, incomingArgs);
+                } catch(e) {
+                    opts.exceptionHandler(e);
+                }
             } else {
                 self.__badNumberOfArguments('Javascript Function ' + incomingAction, action.length, incomingArgs);
             }
@@ -45,11 +70,13 @@ function WebbitSocket(path, target, format) {
         }
     }
 
-    var ws = new WebSocket('ws://' + document.location.host + path + '?serverClientFormat=' + format);
+    var ws = new WebSocket('ws://' + document.location.host + path + '?serverClientFormat=' + opt.serverClientFormat);
+
     ws.onclose = function() {
         target.onclose && target.onclose();
         self.onclose && self.onclose();
     };
+
     ws.onerror = function() {
         target.onerror && target.onerror();
         self.onerror && self.onerror();
@@ -62,7 +89,11 @@ function WebbitSocket(path, target, format) {
             if (incomingAction == '__exportMethods') {
                 exportMethods(incomingArgs);
             } else {
-                invokeOnTarget(incomingAction, incomingArgs);
+                try {
+                    invokeOnTarget(incomingAction, incomingArgs);
+                } catch(e) {
+                    opts.exceptionHandler(e);
+                }
             }
         });
     };

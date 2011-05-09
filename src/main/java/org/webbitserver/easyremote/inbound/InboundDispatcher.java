@@ -3,15 +3,13 @@ package org.webbitserver.easyremote.inbound;
 import org.webbitserver.HttpRequest;
 import org.webbitserver.WebSocketConnection;
 import org.webbitserver.easyremote.BadNumberOfArgumentsException;
+import org.webbitserver.easyremote.ClientException;
 import org.webbitserver.easyremote.NoSuchRemoteMethodException;
 import org.webbitserver.easyremote.Remote;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static java.util.Arrays.asList;
 
@@ -44,6 +42,18 @@ public abstract class InboundDispatcher {
         throw new BadNumberOfArgumentsException(methodDescription, declaredArguments, invokedArguments);
     }
 
+    @Remote
+    public void __reportClientException(String trace) {
+        String[] lines = trace.split("\n");
+        ClientException e = new ClientException(lines[0]);
+        StackTraceElement[] tracElements = new StackTraceElement[lines.length - 1];
+        for (int i = 1; i < lines.length; i++) {
+            tracElements[i - 1] = new StackTraceElement("JAVASCRIPT", lines[i], "???.js", -1);
+        }
+        e.setStackTrace(tracElements);
+        throw e;
+    }
+
     protected abstract InboundMessage unmarshalInboundRequest(String msg);
 
     public interface InboundMessage {
@@ -52,12 +62,12 @@ public abstract class InboundDispatcher {
         Object[] args();
     }
 
-    public void dispatch(WebSocketConnection connection, String msg, Object client) throws Exception {
+    public void dispatch(WebSocketConnection connection, String msg, Object client) throws Throwable {
         InboundMessage inbound = unmarshalInboundRequest(msg);
         Action action = inboundActions.get(inbound.method());
-        if(action == null) {
+        if (action == null) {
             // This is unlikely to happen since the client can only call exported methods. Keep it here as a saefeguard.
-            throw new NoSuchRemoteMethodException(clientType.getName() + "." + inbound.method() + "([" + inbound.args().length +" args])");
+            throw new NoSuchRemoteMethodException(clientType.getName() + "." + inbound.method() + "([" + inbound.args().length + " args])");
         }
         action.call(connection, client, inbound.args());
     }
@@ -67,7 +77,7 @@ public abstract class InboundDispatcher {
     }
 
     public static interface Action {
-        void call(WebSocketConnection connection, Object client, Object[] args) throws Exception;
+        void call(WebSocketConnection connection, Object client, Object[] args) throws Throwable;
     }
 
     private static class ReflectiveAction implements Action {
@@ -82,7 +92,7 @@ public abstract class InboundDispatcher {
         }
 
         @Override
-        public void call(WebSocketConnection connection, Object client, Object[] args) throws Exception {
+        public void call(WebSocketConnection connection, Object client, Object[] args) throws Throwable {
             Class<?>[] paramTypes = method.getParameterTypes();
             Object[] callArgs = new Object[paramTypes.length];
             List<Object> argList = new ArrayList<Object>(asList(args));
@@ -98,10 +108,14 @@ public abstract class InboundDispatcher {
                     callArgs[i] = argList.remove(0);
                 }
             }
-            if(argList.size() != 0) {
-                throw new BadNumberOfArgumentsException(method.toGenericString(), paramTypes.length, asList(args));
+            if (argList.size() != 0) {
+                //throw new BadNumberOfArgumentsException(method.toGenericString(), paramTypes.length, asList(args));
             }
-            method.invoke(target, callArgs);
+            try {
+                method.invoke(target, callArgs);
+            } catch (InvocationTargetException e) {
+                throw e.getTargetException();
+            }
         }
     }
 }
