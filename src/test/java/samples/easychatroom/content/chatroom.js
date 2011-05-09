@@ -39,6 +39,9 @@ function connect() {
             logText('* Disconnected');
         },
         say: function(username, message) {
+            if(message == 'fbomb') {
+                throw "Oh noes";
+            }
             logText("[" + username + "] " + message);
         },
         join: function(username) {
@@ -47,7 +50,9 @@ function connect() {
         leave: function(username) {
             logText("* User '" + username + "' left.");
         }
-    }, window.location.hash.substring(1)); // Use #csv to use CSV transport instead of JSON
+    }, {
+        serverClientFormat: window.location.hash.substring(1) // Use #csv to use CSV transport instead of JSON
+    });
 
     // wire up text input event
     var entry = document.getElementById('entry');

@@ -102,7 +102,7 @@ slow, even for short messages. Parsing this is faster:
 
 To use the CSV format, just construct your WebbitSocket like this:
 
-    new WebbitSocket("/websocket", myClient, "csv");
+    new WebbitSocket("/websocket", myClient, {serverClientFormat:"csv"});
 
 That's it! See the [Chat Room](webbit-easyremote/tree/master/src/test/java/samples/easychatroom) example for a full example. You can run it with:
 
@@ -112,3 +112,7 @@ That's it! See the [Chat Room](webbit-easyremote/tree/master/src/test/java/sampl
 
 If either side tries to invoke a method/function that doesn't exist on the other side, an error will be logged on the server.
 If a method/function is invoked with a different number of arguments than the other side accepts an error will also be logged on the server.
+
+If a function on the client called by the server raises an exception, that exception will be caught in the Javascript library and
+sent down to the server. You will get a better error message on the server if the client has loaded the [stacktrace.js](http://stacktracejs.org/) script.
+You can try this out with the chat example and typing the message "fbomb".

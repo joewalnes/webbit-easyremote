@@ -4,11 +4,10 @@ import com.google.gson.Gson;
 
 public class GsonInboundDispatcher extends InboundDispatcher {
 
-    private final Gson gson;
+    private final Gson gson = new Gson();
 
-    public GsonInboundDispatcher(Object server, Class<?> clientType, Gson gson) {
+    public GsonInboundDispatcher(Object server, Class<?> clientType) {
         super(server, clientType);
-        this.gson = gson;
     }
 
     @Override

@@ -1,6 +1,5 @@
 package org.webbitserver.easyremote;
 
-import com.google.gson.Gson;
 import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
 import org.webbitserver.easyremote.inbound.GsonInboundDispatcher;
@@ -21,8 +20,7 @@ public class MagicWS<CLIENT> implements WebSocketHandler {
 
     public MagicWS(Class<CLIENT> clientType, Server<CLIENT> server) {
         this.clientType = clientType;
-        Gson gson = new Gson();
-        this.in = new GsonInboundDispatcher(server, clientType, gson);
+        this.in = new GsonInboundDispatcher(server, clientType);
         this.server = server;
     }
 
@@ -32,8 +30,8 @@ public class MagicWS<CLIENT> implements WebSocketHandler {
 
     @Override
     public void onOpen(WebSocketConnection connection) throws Exception {
-        String format = connection.httpRequest().queryParam("format");
-        ClientMaker clientMaker = "csv".equals(format) ? new CsvClientMaker() : new GsonClientMaker();
+        String serverClientFormat = connection.httpRequest().queryParam("serverClientFormat");
+        ClientMaker clientMaker = "csv".equals(serverClientFormat) ? new CsvClientMaker() : new GsonClientMaker();
         CLIENT client = clientMaker.implement(clientType, connection);
         ((Exporter)client).__exportMethods(in.availableMethods());
         connection.data(CLIENT_KEY, client);
@@ -41,7 +39,7 @@ public class MagicWS<CLIENT> implements WebSocketHandler {
     }
 
     @Override
-    public void onMessage(WebSocketConnection connection, String msg) throws Exception {
+    public void onMessage(WebSocketConnection connection, String msg) throws Throwable {
         in.dispatch(connection, msg, connection.data(CLIENT_KEY));
     }
 
