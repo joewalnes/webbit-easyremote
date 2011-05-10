@@ -40,19 +40,13 @@ function connect() {
         },
         say: function(username, message) {
             // Some special messages will trigger errors. This is for testing error reporting.
-            if(message == 'string') {
+            if(message == 'throw string') {
                 throw "Oh noes";
             }
-            if(message == 'dom') {
-                throw document.getElementById('chatlog');
-            }
-            if(message == 'circular') {
+            if(message == 'throw exception') {
                 var circular = {};
                 circular.circular = circular;
-                throw circular;
-            }
-            if(message == 'eval') {
-              eval("{");
+                JSON.stringify(circular);
             }
             logText("[" + username + "] " + message);
         },

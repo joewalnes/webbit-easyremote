@@ -8,27 +8,28 @@
  *   serverClientFormat: [csv|json] - How server->client invocations are formatted.
  *                                    Defaults to json. Use 'csv' to use the faster CSV format.
  *
- *   errorHandler: A function that will be called if an exception happens in the client when the
- *                 server invokes a function.
+ *   exceptionHandler: A function that will be called if an exception happens in the client when the
+ *                     server invokes a function. The default will report the error back to the server,
+ *                     using printStackTrace() from http://stracktacejs.org if available.
  */
 function WebbitSocket(path, target, options) {
     var self = this;
 
-    this.reportClientExceptionToServer = function(e) {
-        if(typeof(window.printStackTraceX) == 'function') {
-            self.__reportClientException(printStackTrace({e:e}).join("\n"));
-        } else {
-            if(e.stack) {
-              self.__reportClientException(e.message, e.type, e.stack);
-            } else {
-              self.__reportClientException(e, typeof(e), "");
-            }
-        }
-    };
-
     var opts = {
         serverClientFormat: 'json',
-        exceptionHandler: this.reportClientExceptionToServer
+        exceptionHandler: function(e) {
+            var message = "\n";
+            if(typeof(e) == 'string') {
+                message += e + "\n\n";
+            }
+            if(e.message) message += "message:" + e.message + "\n\n";
+            if(e.type) message += "type:" + e.type + "\n\n";
+            if(e.stack) message += "stack:" + e.stack + "\n\n";
+            if(typeof(window.printStackTrace) == 'function') {
+                message += "stracktacejs.org:" + printStackTrace({e:e}).join("\n") + "\n\n";
+            }
+            self.__reportClientException(message);
+        }
     };
     for (var opt in options) { opts[opt] = options[opt]; }
 
@@ -51,9 +52,9 @@ function WebbitSocket(path, target, options) {
                     args: Array.prototype.slice.call(arguments)
                 };
                 try {
-                  ws.send(JSON.stringify(outgoing));
+                    ws.send(JSON.stringify(outgoing));
                 } catch (e) {
-                  opts.exceptionHandler(e);
+                    opts.exceptionHandler(e);
                 }
             };
         });
