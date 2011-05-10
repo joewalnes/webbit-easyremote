@@ -37,7 +37,7 @@ function WebbitSocket(path, target, options) {
         callback(msg[0], msg.slice(1));
     }
 
-    var incomingInvocation = opt.serverClientFormat == 'csv' ? csvParser : jsonParser;
+    var incomingInvocation = opts.serverClientFormat == 'csv' ? csvParser : jsonParser;
 
     function exportMethods(incomingArgs) {
         incomingArgs.forEach(function(name) {
@@ -70,7 +70,7 @@ function WebbitSocket(path, target, options) {
         }
     }
 
-    var ws = new WebSocket('ws://' + document.location.host + path + '?serverClientFormat=' + opt.serverClientFormat);
+    var ws = new WebSocket('ws://' + document.location.host + path + '?serverClientFormat=' + opts.serverClientFormat);
 
     ws.onclose = function() {
         target.onclose && target.onclose();
