@@ -39,8 +39,20 @@ function connect() {
             logText('* Disconnected');
         },
         say: function(username, message) {
-            if(message == 'fbomb') {
+            // Some special messages will trigger errors. This is for testing error reporting.
+            if(message == 'string') {
                 throw "Oh noes";
+            }
+            if(message == 'dom') {
+                throw document.getElementById('chatlog');
+            }
+            if(message == 'circular') {
+                var circular = {};
+                circular.circular = circular;
+                throw circular;
+            }
+            if(message == 'eval') {
+              eval("{");
             }
             logText("[" + username + "] " + message);
         },

@@ -10,6 +10,8 @@ import org.webbitserver.easyremote.Remote;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static java.util.Arrays.asList;
 
@@ -42,15 +44,30 @@ public abstract class InboundDispatcher {
         throw new BadNumberOfArgumentsException(methodDescription, declaredArguments, invokedArguments);
     }
 
+    // csvParser (http://localhost:9877/webbit.easyremote.js:41:9)
+    private static final Pattern JS_ERROR_PATTERN = Pattern.compile("(.*)\\((\\.js):(\\d+):(\\d+\\))");
+
     @Remote
-    public void __reportClientException(String trace) {
-        String[] lines = trace.split("\n");
-        ClientException e = new ClientException(lines[0]);
-        StackTraceElement[] tracElements = new StackTraceElement[lines.length - 1];
-        for (int i = 1; i < lines.length; i++) {
-            tracElements[i - 1] = new StackTraceElement("JAVASCRIPT", lines[i], "???.js", -1);
+    public void __reportClientException(String message, String type, String stack) {
+        ClientException e = new ClientException(message + (type == null ? "" : " (" + type + ")"));
+        String[] lines = stack.split("\n");
+        StackTraceElement[] elements = new StackTraceElement[lines.length];
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i].replaceAll("^\\s*at\\s", "");
+
+            String methodName = line;
+            String fileName = "???.js";
+            int lineNumber = -1;
+
+            Matcher m = JS_ERROR_PATTERN.matcher(line);
+            if(m.matches()) {
+                methodName = m.group(1);
+                fileName = m.group(2);
+                lineNumber = Integer.parseInt(m.group(3));
+            }
+            elements[i] = new StackTraceElement("JAVASCRIPT", methodName, fileName, lineNumber);
         }
-        e.setStackTrace(tracElements);
+        e.setStackTrace(elements);
         throw e;
     }
 

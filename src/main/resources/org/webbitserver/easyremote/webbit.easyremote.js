@@ -15,10 +15,14 @@ function WebbitSocket(path, target, options) {
     var self = this;
 
     this.reportClientExceptionToServer = function(e) {
-        if(typeof(window.printStackTrace) == 'function') {
+        if(typeof(window.printStackTraceX) == 'function') {
             self.__reportClientException(printStackTrace({e:e}).join("\n"));
         } else {
-            self.__reportClientException(e);
+            if(e.stack) {
+              self.__reportClientException(e.message, e.type, e.stack);
+            } else {
+              self.__reportClientException(e, typeof(e), "");
+            }
         }
     };
 
@@ -46,7 +50,11 @@ function WebbitSocket(path, target, options) {
                     action: name,
                     args: Array.prototype.slice.call(arguments)
                 };
-                ws.send(JSON.stringify(outgoing));
+                try {
+                  ws.send(JSON.stringify(outgoing));
+                } catch (e) {
+                  opts.exceptionHandler(e);
+                }
             };
         });
         target.onopen && target.onopen();
