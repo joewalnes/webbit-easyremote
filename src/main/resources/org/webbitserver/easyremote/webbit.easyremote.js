@@ -10,7 +10,7 @@
  *
  *   exceptionHandler: A function that will be called if an exception happens in the client when the
  *                     server invokes a function. The default will report the error back to the server,
- *                     using printStackTrace() from http://stracktacejs.org if available.
+ *                     using printStackTrace() from http://stacktracejs.org/ if available.
  */
 function WebbitSocket(path, target, options) {
     var self = this;
@@ -26,9 +26,9 @@ function WebbitSocket(path, target, options) {
             if(e.type) message += "type:" + e.type + "\n\n";
             if(e.stack) message += "stack:" + e.stack + "\n\n";
             if(typeof(window.printStackTrace) == 'function') {
-                message += "stracktacejs.org:" + printStackTrace({e:e}).join("\n") + "\n\n";
+                message += "stacktracejs.org:" + printStackTrace({e:e}).join("\n") + "\n\n";
             }
-            self.__reportClientException(message);
+            self.__reportClientException(message); // This function is dynamically defined upon connection
         }
     };
     for (var opt in options) { opts[opt] = options[opt]; }

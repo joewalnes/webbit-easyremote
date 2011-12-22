@@ -44,6 +44,14 @@ public class MagicWS<CLIENT> implements WebSocketHandler {
     }
 
     @Override
+    public void onMessage(WebSocketConnection webSocketConnection, byte[] bytes) throws Throwable {
+    }
+
+    @Override
+    public void onPong(WebSocketConnection webSocketConnection, String s) throws Throwable {
+    }
+
+    @Override
     public void onClose(WebSocketConnection connection) throws Exception {
         server.onClose(connection, (CLIENT) connection.data(CLIENT_KEY));
     }
